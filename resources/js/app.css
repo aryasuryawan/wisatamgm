@@ -1,0 +1,92 @@
+:root {
+    /* Brand via CSS variable Tabler — semua komponen ikut konsisten */
+    --tblr-primary: #0d5c63;
+    --tblr-primary-dark: #08454a;
+    --tblr-primary-rgb: 13, 92, 99;
+    --tblr-body-bg: #f4f6f8;
+}
+
+body {
+    min-height: 100vh;
+    font-size: 1rem;
+}
+
+/* Tablet-first touch targets (btn-sm tetap ringkas) */
+.btn:not(.btn-sm):not(.btn-lg) {
+    min-height: 44px;
+}
+
+/* Sidebar: dropdown (user menu) harus di atas page-wrapper & tak terpotong */
+.navbar-vertical {
+    z-index: 1030;
+    overflow: visible;
+}
+
+.navbar-vertical .dropdown-menu {
+    z-index: 1040;
+}
+
+/* Tom Select — skin bawaan Tabler + safety z-index & background solid */
+.ts-dropdown {
+    z-index: 1050;
+    background-color: var(--tblr-bg-surface, #fff);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* Card Tabler default overflow:hidden memotong dropdown — izinkan escape di POS */
+[dusk='pos-catalog'],
+[dusk='pos-cart'] {
+    overflow: visible;
+}
+
+.ts-dropdown .option {
+    padding: 0.5rem 0.75rem;
+}
+
+.ts-wrapper .ts-control {
+    min-height: 44px;
+}
+
+/* Cegah caret ganda: wrapper diberi class form-select oleh Tabler skin */
+.ts-wrapper.form-select {
+    background-image: none;
+    padding-right: 0.75rem;
+}
+
+.form-control:not(.form-control-sm),
+.form-select:not(.form-select-sm) {
+    min-height: 44px;
+    font-size: 1rem;
+}
+
+/* POS: kartu produk hover */
+.pos-product-card {
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pos-product-card:hover:not(.disabled) {
+    border-color: var(--tblr-primary);
+    box-shadow: 0 0 0 3px rgba(var(--tblr-primary-rgb), 0.15);
+}
+
+.pos-product-card.disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* Receipt print-friendly */
+@media print {
+    .navbar-vertical,
+    .page-header,
+    .footer,
+    .btn,
+    form {
+        display: none !important;
+    }
+
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+}
