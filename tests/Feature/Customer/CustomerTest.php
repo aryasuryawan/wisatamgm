@@ -84,6 +84,7 @@ class CustomerTest extends TestCase
                 'name' => 'Joko Widodo',
                 'source' => 'organic',
                 'nationality_type' => 'indonesia',
+                'customer_type' => 'individual',
                 'phone' => '08123456789',
                 'branch_id' => $this->branch->id,
             ])
@@ -102,6 +103,7 @@ class CustomerTest extends TestCase
                 'name' => 'John Smith',
                 'source' => 'walk_in',
                 'nationality_type' => 'international',
+                'customer_type' => 'corporate',
                 'phone' => '+1234567890',
                 'branch_id' => $this->branch->id,
             ])
@@ -120,6 +122,7 @@ class CustomerTest extends TestCase
                 'name' => 'Customer withPrefs',
                 'source' => 'organic',
                 'nationality_type' => 'indonesia',
+                'customer_type' => 'school',
                 'branch_id' => $this->branch->id,
                 'preferences' => [
                     'allergies' => 'Shellfish',
@@ -144,6 +147,7 @@ class CustomerTest extends TestCase
                 'name' => 'New Name',
                 'source' => 'organic',
                 'nationality_type' => 'indonesia',
+                'customer_type' => 'organization',
             ])
             ->assertRedirect();
 

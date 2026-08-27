@@ -310,13 +310,15 @@ class TransactionService
         ];
 
         if ($customer->phone) {
+            $template = \App\Models\Setting::get('wa_invoice_paid', __('messages.wa_invoice_paid'));
+            $message = str_replace(
+                [':name', ':no', ':total'],
+                [$customer->name, $transaction->id, number_format((float) $transaction->grand_total, 0, ',', '.')],
+                $template
+            );
             $this->whatsapp->queue(
                 phone: $customer->phone,
-                message: __('messages.wa_invoice_paid', [
-                    'name' => $customer->name,
-                    'no' => $transaction->id,
-                    'total' => number_format((float) $transaction->grand_total, 0, ',', '.'),
-                ]),
+                message: $message,
                 type: 'invoice_paid',
                 customer: $customer,
                 transaction: $transaction,
@@ -324,10 +326,12 @@ class TransactionService
         }
 
         if ($customer->email) {
+            $subjectTemplate = \App\Models\Setting::get('email_invoice_subject', __('messages.email_invoice_subject'));
+            $subject = str_replace(':no', $transaction->id, $subjectTemplate);
             $this->emails->queueInvoice(
                 $customer,
                 $transaction,
-                subject: __('messages.email_invoice_subject', ['no' => $transaction->id]),
+                subject: $subject,
                 invoiceData: $invoice,
             );
         }

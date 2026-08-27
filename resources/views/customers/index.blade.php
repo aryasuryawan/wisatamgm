@@ -11,11 +11,20 @@
     <x-ui.card dusk="customers-card" :padded="false">
         <div class="card-header">
             <form method="GET" class="row g-2 w-100" dusk="search-form">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <input type="text" name="q" class="form-control" placeholder="{{ __('ui.search_customer') }}"
                            value="{{ request('q') }}" dusk="search-input">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
+                    <select name="customer_type" class="form-select" dusk="filter-customer-type">
+                        <option value="">{{ __('ui.all_customer_types') }}</option>
+                        <option value="individual" @selected(request('customer_type') === 'individual')>{{ __('ui.customer_type_individual') }}</option>
+                        <option value="corporate" @selected(request('customer_type') === 'corporate')>{{ __('ui.customer_type_corporate') }}</option>
+                        <option value="organization" @selected(request('customer_type') === 'organization')>{{ __('ui.customer_type_organization') }}</option>
+                        <option value="school" @selected(request('customer_type') === 'school')>{{ __('ui.customer_type_school') }}</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <select name="segment" class="form-select" dusk="filter-segment">
                         <option value="">{{ __('ui.all_segments') }}</option>
                         @foreach (['VIP', 'Repeat', 'Baru'] as $seg)
@@ -23,7 +32,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <select name="nationality" class="form-select" dusk="filter-nationality">
                         <option value="">{{ __('ui.all_nationalities') }}</option>
                         <option value="indonesia" @selected(request('nationality') === 'indonesia')>{{ __('ui.indonesia') }}</option>
@@ -42,6 +51,7 @@
                 <tr>
                     <th>{{ __('ui.table_name') }}</th>
                     <th>{{ __('ui.phone') }}</th>
+                    <th>{{ __('ui.customer_type') }}</th>
                     <th>{{ __('ui.nationality') }}</th>
                     <th>{{ __('ui.segment') }}</th>
                     <th>{{ __('ui.orders') }}</th>
@@ -59,6 +69,7 @@
                             </a>
                         </td>
                         <td>{{ $customer->phone ?: '-' }}</td>
+                        <td><x-ui.badge color="secondary">{{ __('ui.customer_type_'.$customer->customer_type) }}</x-ui.badge></td>
                         <td>
                             @if($customer->nationality_type === 'indonesia')
                                 <x-ui.badge color="success">{{ __('ui.indonesia') }}</x-ui.badge>
@@ -93,7 +104,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="text-center text-muted py-4">{{ __('ui.empty_customers') }}</td></tr>
+                    <tr><td colspan="8" class="text-center text-muted py-4">{{ __('ui.empty_customers') }}</td></tr>
                 @endforelse
                 </tbody>
             </table>

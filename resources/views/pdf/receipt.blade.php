@@ -27,8 +27,15 @@
 </head>
 <body>
 
+@php
+    $brand = \App\Models\Setting::get('pdf_company_header')
+        ?: ($transaction->branch?->name ?? config('app.name'));
+    $footer = \App\Models\Setting::get('pdf_receipt_footer');
+    $showTax = \App\Models\Setting::get('pdf_show_tax', '1') === '1';
+@endphp
+
 <div class="head">
-    <div class="brand">{{ $transaction->branch?->name ?? config('app.name') }}</div>
+    <div class="brand">{{ $brand }}</div>
     <div class="meta">
         {{ $transaction->branch?->address }}
         @if($transaction->branch?->phone) · {{ __('ui.phone') }} {{ $transaction->branch->phone }} @endif
@@ -68,7 +75,7 @@
     @if ((float) $transaction->discount_total > 0)
         <tr><td>Diskon</td><td class="r">- Rp {{ number_format($transaction->discount_total, 0, ',', '.') }}</td></tr>
     @endif
-    @if ((float) $transaction->tax_total > 0)
+    @if ($showTax && (float) $transaction->tax_total > 0)
         <tr><td>PPN 11%</td><td class="r">Rp {{ number_format($transaction->tax_total, 0, ',', '.') }}</td></tr>
     @endif
     <tr class="grand"><td>TOTAL</td><td class="r">Rp {{ number_format($transaction->grand_total, 0, ',', '.') }}</td></tr>
@@ -89,8 +96,8 @@
 @endforeach
 
 <div class="footer">
-    {{ __('ui.email_invoice_footer') }}<br>
-    Dicetak {{ now()->format('d/m/Y H:i') }} — {{ config('app.name') }}
+    {{ $footer ?: __('ui.email_invoice_footer') }}<br>
+    Dicetak {{ now()->format('d/m/Y H:i') }} — {{ \App\Models\Setting::get('business_name') ?: config('app.name') }}
 </div>
 
 </body>

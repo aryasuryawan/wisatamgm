@@ -19,9 +19,9 @@
 </head>
 <body class="layout-fluid">
 <div class="page">
-    <!-- BEGIN SIDEBAR -->
-    <aside class="navbar navbar-vertical navbar-expand-lg" data-bs-theme="dark">
-        <div class="container-fluid">
+    <!-- BEGIN TOP NAVBAR -->
+    <header class="navbar navbar-expand-md d-print-none" data-bs-theme="light">
+        <div class="container-xl">
             <!-- NAVBAR TOGGLER -->
             <button class="navbar-toggler" type="button"
                     data-bs-toggle="collapse" data-bs-target="#sidebar-menu"
@@ -30,27 +30,33 @@
             </button>
 
             <!-- NAVBAR LOGO -->
-            <div class="navbar-brand navbar-brand-autodark" dusk="brand">
-                {{ $brand }}
-            </div>
+            <a href="{{ route('dashboard') }}" class="navbar-brand navbar-brand-autodark me-3" dusk="brand">
+                <span class="sg-logo-mark">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22c4-4 8-7.5 8-12a8 8 0 1 0-16 0c0 4.5 4 8 8 12z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                </span>
+                <span class="d-none d-xl-inline">{{ $brand }}</span>
+            </a>
 
-            <!-- USER AREA: language switcher selalu terlihat + menu pengguna -->
-            <div class="d-none d-lg-block w-100 mt-2">
-                <x-ui.language-switcher />
-            </div>
+            <!-- NAVBAR RIGHT: language switcher & user menu -->
+            <div class="navbar-nav flex-row order-md-last ms-auto">
+                <!-- Language switcher -->
+                <div class="nav-item d-flex align-items-center">
+                    <x-ui.language-switcher class="d-inline-block align-middle"/>
+                </div>
 
-            <div class="d-none d-lg-flex align-items-center gap-2 mt-2">
+                <!-- User menu -->
                 <div class="nav-item dropdown">
-                    <a href="#" class="nav-link d-flex lh-1 text-secondary p-0 px-2"
+                    <a href="#" class="nav-link d-flex lh-1 text-reset p-0 px-2"
                        data-bs-toggle="dropdown" aria-label="Open user menu" dusk="user-menu">
-                        <span class="avatar avatar-sm bg-primary text-white">
+                        <span class="avatar avatar-sm" style="background: var(--tblr-primary); color: #fff; border: 2px solid rgba(255,255,255,0.15);">
                             {{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}
                         </span>
                         <div class="d-none d-xl-block ps-2">
-                            <div class="text-white">{{ auth()->user()?->name }}</div>
-                            <div class="mt-1 small text-secondary">
-                                {{ auth()->user()?->getRoleNames()->implode(', ') }}
-                            </div>
+                            <div>{{ auth()->user()?->name }}</div>
+                            <div class="mt-1 small text-secondary">{{ auth()->user()?->getRoleNames()->implode(', ') }}</div>
                         </div>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow" dusk="user-dropdown">
@@ -66,6 +72,30 @@
                         </form>
                     </div>
                 </div>
+            </div>
+        </div>
+    </header>
+    <!-- END TOP NAVBAR -->
+
+    <!-- BEGIN SIDEBAR -->
+    <aside class="navbar navbar-vertical navbar-expand-lg" data-bs-theme="dark">
+        <div class="container-fluid">
+            <!-- NAVBAR TOGGLER -->
+            <button class="navbar-toggler d-lg-none" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#sidebar-menu"
+                    aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- NAVBAR LOGO (sidebar) -->
+            <div class="navbar-brand navbar-brand-autodark" dusk="brand">
+                <span class="sg-logo-mark">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22c4-4 8-7.5 8-12a8 8 0 1 0-16 0c0 4.5 4 8 8 12z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                </span>
+                <span class="d-none d-xl-inline">{{ $brand }}</span>
             </div>
 
             <!-- COLLAPSE WRAPPER -->
@@ -111,10 +141,12 @@
                                 ],
                             ],
                             [
-                                'label' => __('ui.nav_administration'), 'icon' => 'ti-settings', 'match' => ['branches.*', 'notifications.*'],
+                                'label' => __('ui.nav_administration'), 'icon' => 'ti-settings', 'match' => ['branches.*', 'notifications.*', 'settings.*', 'users.*'],
                                 'items' => [
                                     ['can' => 'branches.view', 'route' => 'branches.index', 'match' => 'branches.*', 'label' => __('ui.branches')],
                                     ['can' => 'notifications.view', 'route' => 'notifications.index', 'match' => 'notifications.*', 'label' => __('ui.notifications')],
+                                    ['can' => 'settings.view', 'route' => 'settings.index', 'match' => 'settings.*', 'label' => __('ui.settings')],
+                                    ['can' => 'users.view', 'route' => 'users.index', 'match' => 'users.*', 'label' => __('ui.users')],
                                 ],
                             ],
                         ];
@@ -171,11 +203,6 @@
                         </li>
                     @endforeach
                     </ul>
-
-                    <div class="d-lg-none mt-3 pt-3 border-top" dusk="language-switcher-mobile">
-                        <span class="text-secondary small d-block mb-2">{{ __('ui.language') }}</span>
-                        <x-ui.language-switcher />
-                    </div>
                 </div>
         </div>
     </aside>

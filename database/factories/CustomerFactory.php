@@ -19,6 +19,7 @@ class CustomerFactory extends Factory
             'phone' => fake()->phoneNumber(),
             'email' => fake()->optional()->safeEmail(),
             'nationality_type' => fake()->randomElement(['indonesia', 'international']),
+            'customer_type' => fake()->randomElement(['individual', 'corporate', 'organization', 'school']),
             'source' => fake()->randomElement(['organic', 'ads', 'referral', 'walk_in', 'other']),
             'segment_tag' => null,
             'notes' => null,

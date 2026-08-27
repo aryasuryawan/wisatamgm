@@ -18,10 +18,10 @@
                         @endforeach
                     </div>
                 </div>
-                <div class="col-auto {{ request('preset') === 'custom' ? '' : 'd-none' }} d-print-none">
+                <div class="col-auto {{ request('preset') === 'custom' ? '' : 'd-none' }}">
                     <input type="date" name="date_from" value="{{ request('date_from', $from->format('Y-m-d')) }}" class="form-control form-control-sm">
                 </div>
-                <div class="col-auto {{ request('preset') === 'custom' ? '' : 'd-none' }} d-print-none">
+                <div class="col-auto {{ request('preset') === 'custom' ? '' : 'd-none' }}">
                     <input type="date" name="date_until" value="{{ request('date_until', $until->format('Y-m-d')) }}" class="form-control form-control-sm">
                 </div>
 
@@ -54,7 +54,7 @@
     </div>
 
     {{-- --------------------------------------------------------- KPI cards --}}
-    <div class="row row-deck row-cards mb-3">
+    <div class="row row-deck row-cards mb-4">
         <div class="col-sm-6 col-lg-3">
             <x-dashboard.kpi-card title="{{ __('ui.revenue_month') }}" anchor="chart-trend"
                                   value="Rp {{ number_format($pl['revenue'], 0, ',', '.') }}"
@@ -96,9 +96,9 @@
         <div class="card mb-3 border-{{ collect($insights)->first()['level'] }}" dusk="insight-panel">
             <div class="card-body py-2">
                 <div class="subheader mb-1"><i class="ti ti-bulb icon icon-1 me-1"></i>{{ __('ui.insights') }}</div>
-                @foreach ($insights as $insight)
+@foreach ($insights as $insight)
                     <p class="mb-1 small">
-                        <span class="badge bg-{{ $insight['level'] }} me-1">&nbsp;</span>{{ $insight['text'] }}
+                        <span class="badge bg-{{ $insight['level'] }} me-1">{{ data_get($insight, 'items', collect())->count() }}</span>{{ $insight['text'] }}
                     </p>
                 @endforeach
             </div>
@@ -106,7 +106,7 @@
     @endif
 
     {{-- ------------------------------------------------------------- Charts --}}
-    <div class="row row-deck row-cards mb-3">
+    <div class="row row-deck row-cards mb-4">
         <div class="col-lg-8" id="chart-trend">
             <x-dashboard.chart-panel id="trend-panel" title="{{ __('ui.revenue_vs_expense_vs_profit') }}"
                                      subtitle="{{ $from->translatedFormat('d M Y') }} – {{ $until->translatedFormat('d M Y') }}"
@@ -118,7 +118,7 @@
         </div>
     </div>
 
-    <div class="row row-deck row-cards mb-3">
+    <div class="row row-deck row-cards mb-4">
         <div class="col-lg-6">
             <x-dashboard.chart-panel id="chart-day" title="{{ __('ui.busiest_day') }}" height="240px" :config="$dayChart"/>
         </div>
@@ -127,7 +127,7 @@
         </div>
     </div>
 
-    <div class="row row-deck row-cards mb-3">
+    <div class="row row-deck row-cards mb-4">
         <div class="col-lg-6">
             <x-ui.card :title="__('ui.top_products')" :padded="false">
                 <table class="table card-table table-vcenter text-nowrap mb-0" dusk="top-products-table">
@@ -160,7 +160,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="2" class="text-center text-muted py-3">{{ __('ui.no_cost_data') }}</td></tr>
+                        <tr><td colspan="2" class="text-center text-muted py-3"><i class="ti ti-alert small me-1"></i>{{ __('ui.no_cost_data') }}</td></tr>
                     @endforelse
                     </tbody>
                 </table>
@@ -169,9 +169,13 @@
     </div>
 
     {{-- ------------------------------------------------------------- Alerts --}}
-    <div class="row row-deck row-cards mb-3">
-        <div class="col-lg-5">
-            <x-ui.card :title="__('ui.alerts')">
+<div class="row row-deck row-cards mb-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm" dusk="card">
+            <div class="card-header py-2">
+                <h5 class="card-title mb-0 fw-semibold">{{ __('ui.alerts') }}</h5>
+            </div>
+            <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
                 @foreach ($alerts as $alert)
                     <x-dashboard.alert-item
                         level="{{ $alert['level'] }}"
@@ -180,63 +184,71 @@
                         duskId="alert-{{ $alert['key'] }}">
                         @forelse ($alert['items'] as $item)
                             <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-1 small">
-                                <span>
+                                <span style="flex-shrink: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
                                     {{ $alert['key'] === 'nostaff'
                                         ? ($item->product?->name ?? '-').' · '.$item->date_start->translatedFormat('d M H:i')
                                         : $item->name }}
                                     @isset($item->stock) <span class="text-danger">(sisa {{ $item->stock }})</span>@endisset
                                 </span>
-                                <a href="{{ $alert['key'] === 'nostaff'
-                                            ? route('schedules.index')
-                                            : route('inventory.create', ['product_id' => $item->id]) }}"
-                                   class="btn btn-outline-primary btn-sm py-0">
-                                    {{ $alert['key'] === 'nostaff' ? __('ui.assign_staff') : __('ui.stock_in_action') }}
-                                </a>
+                                <div class="ms-auto">
+                                    <a href="{{ $alert['key'] === 'nostaff'
+                                        ? route('schedules.index')
+                                        : route('inventory.create', ['product_id' => $item->id]) }}"
+                                       class="btn btn-outline-primary btn-sm py-0">
+                                        {{ $alert['key'] === 'nostaff' ? __('ui.assign_staff') : __('ui.stock_in_action') }}
+                                    </a>
+                                </div>
                             </div>
                         @empty
-                            <span class="text-muted small">{{ __('ui.no_items') }}</span>
+                            <div class="text-muted small text-center py-3">{{ __('ui.no_items') }}</div>
                         @endforelse
                     </x-dashboard.alert-item>
                 @endforeach
-            </x-ui.card>
-        </div>
-
-        {{-- ------------------------------------------------ Transaksi terbaru --}}
-        <div class="col-lg-7">
-            <x-ui.card :title="__('ui.latest_transactions')" :padded="false" x-data="{ q: '' }">
-                <div class="card-header py-2">
-                    <input type="search" placeholder="{{ __('ui.search') }}…"
-                           class="form-control form-control-sm w-auto"
-                           x-model="q" dusk="recent-search">
-                </div>
-                <div class="table-responsive">
-                    <table class="table card-table table-vcenter text-nowrap" dusk="recent-transactions-table">
-                        <thead><tr><th>#</th><th>{{ __('ui.customer') }}</th><th>{{ __('ui.date') }}</th><th>{{ __('ui.table_status') }}</th><th class="text-end">{{ __('ui.total') }}</th></tr></thead>
-                        <tbody>
-                        @forelse ($recentTransactions as $t)
-                            <tr x-show="!q || (String($t.customer?->name ?? '') + String($t.id)).toLowerCase().includes(q.toLowerCase())"
-                                dusk="recent-row-{{ $t->id }}">
-                                <td class="fw-semibold">#{{ $t->id }}</td>
-                                <td>{{ $t->customer?->name ?? '-' }}</td>
-                                <td class="text-muted small">{{ $t->transaction_date?->translatedFormat('d M H:i') }}</td>
-                                <td>
-                                    <x-ui.badge color="{{ ['paid'=>'success','partial'=>'warning','confirmed'=>'info','draft'=>'secondary','void'=>'danger'][$t->status] ?? 'secondary' }}">
-                                        {{ __('ui.status_'.$t->status) }}
-                                    </x-ui.badge>
-                                </td>
-                                <td class="text-end">Rp {{ number_format($t->grand_total, 0, ',', '.') }}</td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="5" class="text-center text-muted py-3">-</td></tr>
-                        @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                <div class="card-footer">
-                    <a href="{{ route('transactions.index', array_merge(['status' => ''], ['branch_id' => $branch->id])) }}"
-                       class="small" dusk="see-all-transactions">{{ __('ui.see_all_transactions') }} →</a>
-                </div>
-            </x-ui.card>
+            </div>
         </div>
     </div>
+
+            <div class="col-lg-6">
+        <div class="card shadow-sm" dusk="card" x-data="{ q: '' }">
+            <div class="card-header py-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-semibold">{{ __('ui.latest_transactions') }}</h5>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text"><i class="ti ti-search"></i></span>
+                        <input type="search" placeholder="{{ __('ui.search') }}…"
+                               class="form-control form-control-sm w-auto"
+                               x-model="q" dusk="recent-search">
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter text-nowrap table-sm mb-0" dusk="recent-transactions-table">
+                    <thead><tr><th>#</th><th>{{ __('ui.customer') }}</th><th class="d-none d-xl-table-cell">{{ __('ui.date') }}</th><th>{{ __('ui.table_status') }}</th><th class="text-end">{{ __('ui.total') }}</th></tr></thead>
+                    <tbody>
+                    @forelse ($recentTransactions as $t)
+                        <tr x-show="!q || (String($t.customer?->name ?? '') + String($t->id)).toLowerCase().includes(q.toLowerCase())"
+                            dusk="recent-row-{{ $t->id }}">
+                            <td class="fw-semibold">#{{ $t->id }}</td>
+                            <td>{{ $t->customer?->name ?? '-' }}</td>
+                            <td class="d-none d-xl-table-cell text-muted small">{{ $t->transaction_date?->translatedFormat('d M H:i') }}</td>
+                            <td>
+                                <x-ui.badge color="{{ ['paid'=>'success','partial'=>'warning','confirmed'=>'info','draft'=>'secondary','void'=>'danger'][$t->status] ?? 'secondary' }}">
+                                    {{ __('ui.status_'.$t->status) }}
+                                </x-ui.badge>
+                            </td>
+                            <td class="text-end">Rp {{ number_format($t->grand_total, 0, ',', '.') }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="5" class="text-center text-muted py-3">-</td></tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <a href="{{ route('transactions.index', array_merge(['status' => ''], ['branch_id' => $branch->id])) }}"
+                   class="small" dusk="see-all-transactions">{{ __('ui.see_all_transactions') }} → <span class="text-muted small">(menampilkan 10 transaksi terakhir)</span></a>
+            </div>
+        </div>
+    </div>
+</div>
 </x-layouts.app>

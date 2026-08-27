@@ -20,6 +20,7 @@ class Customer extends Model
         'phone',
         'email',
         'nationality_type',
+        'customer_type',
         'source',
         'segment_tag',
         'notes',

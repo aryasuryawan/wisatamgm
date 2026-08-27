@@ -62,9 +62,25 @@ class BookingCalendarTest extends TestCase
     public function test_calendar_navigation_months(): void
     {
         $this->actingAs($this->owner)
-            ->get(route('bookings.calendar', ['month' => '2026-12']))
+            ->get(route('bookings.calendar', ['view' => 'month', 'date' => '2026-12-15']))
             ->assertOk()
             ->assertSee('Desember 2026');
+    }
+
+    public function test_calendar_week_view(): void
+    {
+        $this->actingAs($this->owner)
+            ->get(route('bookings.calendar', ['view' => 'week', 'date' => '2026-08-25']))
+            ->assertOk()
+            ->assertSee('Minggu');
+    }
+
+    public function test_calendar_day_view(): void
+    {
+        $this->actingAs($this->owner)
+            ->get(route('bookings.calendar', ['view' => 'day', 'date' => '2026-08-25']))
+            ->assertOk()
+            ->assertSee('Hari');
     }
 
     public function test_cancelled_bookings_do_not_block_cells(): void

@@ -51,12 +51,17 @@ class SendScheduleReminders extends Command
                         continue;
                     }
 
-                    $message = __('messages.wa_schedule_reminder', [
-                        'label' => $target['label'],
-                        'name' => $customer->name,
-                        'product' => $schedule->product?->name ?? '-',
-                        'date' => optional($schedule->date_start)->format('d M Y H:i'),
-                    ]);
+                    $template = \App\Models\Setting::get('wa_schedule_reminder', __('messages.wa_schedule_reminder'));
+                    $message = str_replace(
+                        [':label', ':name', ':product', ':date'],
+                        [
+                            $target['label'],
+                            $customer->name,
+                            $schedule->product?->name ?? '-',
+                            optional($schedule->date_start)->format('d M Y H:i'),
+                        ],
+                        $template
+                    );
 
                     if ($this->option('dry-run')) {
                         $this->line("[DRY] {$customer->phone}: {$message}");

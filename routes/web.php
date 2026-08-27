@@ -16,6 +16,7 @@ use App\Http\Controllers\Product\ProductController;
 use App\Http\Controllers\Report\ReportController;
 use App\Http\Controllers\Schedule\ScheduleController;
 use App\Http\Controllers\Transaction\TransactionController;
+use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -146,6 +147,14 @@ Route::middleware('auth')->group(function () {
     Route::get('notifications', \App\Http\Controllers\Notification\NotificationController::class.'@index')
         ->name('notifications.index')
         ->middleware('permission:notifications.view');
+
+    Route::get('settings', [\App\Http\Controllers\SettingController::class, 'index'])
+        ->name('settings.index')->middleware('permission:settings.view');
+    Route::put('settings', [\App\Http\Controllers\SettingController::class, 'update'])
+        ->name('settings.update')->middleware('permission:settings.edit');
+
+    Route::resource('users', UserController::class)
+        ->middleware('permission:users.view');
 
     Route::get('bookings/calendar', [\App\Http\Controllers\Booking\BookingController::class, 'calendar'])
         ->name('bookings.calendar')->middleware('permission:bookings.view');

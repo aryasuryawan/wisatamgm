@@ -32,6 +32,10 @@ class CustomerController extends Controller
             $query->nationality($nationality);
         }
 
+        if ($customerType = $request->input('customer_type')) {
+            $query->where('customer_type', $customerType);
+        }
+
         return view('customers.index', [
             'customers' => $query->paginate(20)->withQueryString(),
         ]);
@@ -53,6 +57,7 @@ class CustomerController extends Controller
             'phone' => ['nullable', 'string', 'max:32'],
             'email' => ['nullable', 'email', 'max:255'],
             'nationality_type' => ['required', 'in:indonesia,international'],
+            'customer_type' => ['required', 'in:individual,corporate,organization,school'],
             'source' => ['required', 'in:organic,ads,referral,walk_in,other'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'preferences.allergies' => ['nullable', 'string', 'max:500'],
@@ -102,6 +107,7 @@ class CustomerController extends Controller
             'phone' => ['nullable', 'string', 'max:32'],
             'email' => ['nullable', 'email', 'max:255'],
             'nationality_type' => ['required', 'in:indonesia,international'],
+            'customer_type' => ['required', 'in:individual,corporate,organization,school'],
             'source' => ['required', 'in:organic,ads,referral,walk_in,other'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'preferences.allergies' => ['nullable', 'string', 'max:500'],

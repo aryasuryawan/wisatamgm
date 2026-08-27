@@ -4,7 +4,7 @@
     'padded' => true,
 ])
 
-<div {{ $attributes->merge(['class' => 'card shadow-sm']) }} dusk="card">
+<div {{ $attributes->merge(['class' => 'card shadow-sm', 'dusk' => 'card']) }}>
     @if ($padded)
         <div class="card-body p-4">
             @if ($title)

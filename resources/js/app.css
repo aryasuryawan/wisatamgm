@@ -1,8 +1,5 @@
 :root {
-    /* Brand via CSS variable Tabler — semua komponen ikut konsisten */
-    --tblr-primary: #0d5c63;
-    --tblr-primary-dark: #08454a;
-    --tblr-primary-rgb: 13, 92, 99;
+    /* Brand colors now defined in sip-garden-theme.css */
     --tblr-body-bg: #f4f6f8;
 }
 

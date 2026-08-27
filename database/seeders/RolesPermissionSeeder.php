@@ -29,6 +29,7 @@ class RolesPermissionSeeder extends Seeder
             'settings' => ['view', 'edit'],
             'notifications' => ['view'],
             'bookings' => ['view', 'create', 'edit', 'delete'],
+            'users' => ['view', 'create', 'edit', 'delete'],
         ];
 
         $permissions = [];
@@ -58,6 +59,7 @@ class RolesPermissionSeeder extends Seeder
                 'dashboard.view',
                 'notifications.view',
                 'bookings.view', 'bookings.create', 'bookings.edit',
+                'users.view', 'users.create', 'users.edit',
             ],
             'kasir' => [
                 'customers.view', 'customers.create', 'customers.edit',
@@ -80,6 +82,7 @@ class RolesPermissionSeeder extends Seeder
                 'reports.view', 'reports.export',
                 'dashboard.view',
                 'notifications.view',
+                'users.view',
             ],
             'marketing' => [
                 'discounts.view', 'discounts.create', 'discounts.edit',

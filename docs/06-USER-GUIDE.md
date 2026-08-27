@@ -158,10 +158,16 @@ PPN dihitung server, double-submit dicegah dengan idempotency key.
 
 Untuk penjualan "bayar belakangan" (korporat/meeting room/booking).
 
+> **Catatan:** Invoice bukan model terpisah — invoice adalah **transaksi** (Transaction)
+> yang dibuat dari Booking dengan status `confirmed`/`partial` (belum lunas).
+> Setelah lunas, transaksi keluar dari daftar piutang.
+
 ### Menerbitkan tagihan dari booking
 1. Buka detail **Booking** yang masih Terbooking dan belum ada transaksi.
 2. Klik **Terbitkan Tagihan** → sistem membuat transaksi belum-dibayar
    (jumlah = harga × jumlah malam) dan mengaitkannya ke booking.
+   - Tombol hanya muncul jika booking **belum punya transaksi terkait**.
+   - Jika sudah terbit, halaman booking menampilkan nomor transaksi instead.
 3. Kirim ke pelanggan:
    - Tombol **PDF** → unduh/buka invoice, lampirkan manual (WA dsb), ATAU
    - Tombol **Kirim Email Tagihan** (muncul bila pelanggan punya email) → email
@@ -171,6 +177,7 @@ Untuk penjualan "bayar belakangan" (korporat/meeting room/booking).
 1. Buka receipt transaksi dari daftar Tagihan.
 2. **Catat Pembayaran** (boleh parsial/DP, upload bukti transfer).
 3. Setelah sisa = 0 → status **paid** → hilang dari daftar piutang, masuk omzet.
+4. Saat lunas, sistem otomatis mengirim WhatsApp notifikasi + email invoice ke pelanggan.
 
 ### Memantau piutang
 **Penjualan → Tagihan**: semua tagihan outstanding + **Total Piutang** di footer.
@@ -330,6 +337,119 @@ Saat ini 6 kategori bawaan. Ajukan ke admin/developer (ditambah via seeder).
 Hampir semua hapus butuh konfirmasi & tercatat di audit log. Void transaksi hanya
 owner dan mengembalikan stok secara otomatis.
 
+**Tombol "Terbitkan Tagihan" tidak muncul di halaman booking?**
+Booking sudah punya transaksi terkait (terlihat di halaman booking sebagai nomor transaksi).
+Cek daftar Tagihan untuk melihat/mengelola transaksi tersebut.
+
+**Email invoice tidak terkirim?**
+Cek **Log Notifikasi → Email** untuk status (Menunggu/Terkirim/Gagal). Pastikan
+`php artisan queue:work` aktif. Jika Gagal, catatan error ada di kolom status.
+
+**Tagihan tidak muncul di daftar Tagihan?**
+Pastikan transaksi berstatus `confirmed` atau `partial`. Transaksi yang sudah lunas (`paid`)
+keluar dari daftar otomatis. Cek di halaman **Transaksi** untuk arsip semua transaksi.
+
 ---
 
-*Dokumen: `docs/06-USER-GUIDE.md` · diperbarui 2026-08-25*
+## 22. Pengaturan (Settings) — Memanage Identitas & Integrasi
+
+Akses: **Administrasi → Pengaturan** (hanya role *Owner*).
+
+Sebelum mengubah setting, pastikan sudah login sebagai *Owner* dengan permission `settings.view` / `settings.edit`.
+
+### Tab General — Informasi Perusahaan
+
+Buka `/settings?tab=business`.
+
+| Field | Deskripsi |
+|------|-----------|
+| **Nama Perusahaan** | Ditampilkan di header PDF, footer, dan sidebar |
+| **Telepon** | Ditampilkan di PDF receipt & informasi cabang |
+| **Email** | Email resmi perusahaan |
+| **Alamat** | Alamat lengkap cabang |
+| **NPWP** | Nomor Pokok Wajib Pajak |
+| **Website** | URL website perusahaan |
+| **Logo** | Unggah file gambar (JPG/PNG/WebP, max 2MB) → disimpan di `storage/app/public/settings/logo.xxx` |
+| **Catatan Footer** | Teks yang muncul di bawah setiap kuitansi PDF |
+
+**Cara kerja:** Setiap perubahan langsung menyimpan ke database `settings` group `business`. Nilai ini juga digunakan saat mencetak PDF receipt (lihat §9).
+
+### Tab Notifikasi — Template WA & Email
+
+Buka `/settings?tab=notifications`.
+
+| Field | Deskripsi |
+|------|-----------|
+| **Template WA — Invoice Diterima** | Template pesan WhatsApp yang dikirim saat transaksi berhasil dibayar. Variabel: `:name` (nama pelanggan), `:no` (no transaksi), `:total` (total harga). |
+| **Template WA — Pengingat Jadwal** | Template pesan WhatsApp pengingat H-1/H-3 sebelum trip. Variabel: `:name`, `:label` (H-1/H-3), `:product`, `:date`. |
+| **Subjek Email Invoice** | Subjek email otomatis saat invoice dikirim ke pelanggan email. |
+| **Isi Email Invoice** | Body email invoice. Variabel: `:name`, `:no`, `:total`, `:paid`, `:date`. |
+| **Footer Email** | Teks footer yang muncul di bawah body email invoice. |
+
+**Cara kerja:** Setiap perubahan disimpan ke database `settings` group `notifications`. Template ini digunakan oleh sistem saat:
+- Transaksi POS berhasil → WA ke pelanggan (via `TransactionService.php`)
+- Jadwal trip reminder → WA ke peserta (via `SendScheduleReminders.php`)
+- Invoice email dikirim → subjek & body dari setting (via `emails/invoice.blade.php`)
+
+### Tab Template — Setting PDF
+
+Buka `/settings?tab=templates`.
+
+| Field | Deskripsi |
+|------|-----------|
+| **Header Perusahaan di PDF** | Nama/logo yang muncul di kiri atas tiap kuitansi |
+| **Header Kuitansi** | Teks tambahan di header kuitansi (opsional) |
+| **Ukuran Kertas** | Pilih **A4** atau **A5** (default A5) |
+| **Tampilkan Logo** | Centang/tetap untuk menampilkan/logo di header PDF |
+| **Tampilkan Pajak (PPN 11%)** | Centang untuk menampilkan baris PPN di total; hapus centang untuk menyembunyikan |
+
+**Fitur Preview Real-time** (di bawah form):
+- Nama usaha berubah saat diedit → nama di preview berubah
+- Footer berubah → teks di bawah preview berubah
+- Centang/tetap PPN → baris PPN muncul/ menghilang di preview
+- Klik tombol "Simpan perubahan" → preview menutup/tampil
+
+**Catatan:** Semua nilai ini langsung digunakan saat download PDF dari halaman transaksi (§9). Tidak perlu konfigurasi tambahan.
+
+### Tab Integrasi — Fonnte & SMTP
+
+Buka `/settings?tab=integrations`.
+
+#### WhatsApp — Fonnte API
+
+| Field | Deskripsi |
+|------|-----------|
+| **Fonnte API URL** | Biasa: `https://api.fonnte.com/send` (biasanya tidak perlu diubah) |
+| **Fonnte Token** | Token API dari [fonnte.com](https://fonnte.com). Disiapkan di `.env` sebagai `FONNTE_TOKEN` tetapi juga bisa di-override dari setting ini. |
+
+#### Email — Konfigurasi SMTP
+
+| Field | Deskripsi |
+|------|-----------|
+| **SMTP Host** | Misal: `smtp.gmail.com`, `smtp.mailtrap.io`, dll |
+| **Port** | Umumnya **587** (TLS) atau **465** (SSL) |
+| **Username** | Email pengirim SMTP |
+| **Password** | Password email atau aplikasi-specific password |
+| **Encryption** | `tls` (default), `ssl`, atau `null` |
+| **Email Pengirim (From)** | Alamat email yang akan muncul di kotak penerima |
+| **Nama Pengirim (From Name)** | Nama yang akan muncul di kotak penerima |
+
+**Cara kerja:** Nilai ini digunakan oleh `AppServiceProvider::boot()` untuk mengoverride `config('services.fonnte.*')` dan `config('mail.mailers.smtp.*')` kapan saja. Semua pengiriman WA/email di aplikasi akan membaca dari setting ini—tidak perlu mengubah `.env` selama setting terisi.
+
+### Bagaimana setting ini digunakan di seluruh aplikasi?
+
+| Fitur | Setting yang dibaca |
+|------|---|
+| PDF Receipt (Cetak/Download) | `pdf_company_header`, `pdf_receipt_footer`, `pdf_show_tax`, `pdf_paper_size` |
+| WhatsApp Kirim Invoice | `wa_invoice_paid` template |
+| WhatsApp Kirim Reminder Jadwal | `wa_schedule_reminder` template |
+| Email Invoice (Subjek) | `email_invoice_subject` |
+| Email Invoice (Body) | `email_invoice_body` |
+| Email Footer | `email_invoice_footer` |
+| Nama di Sidebar & Footer | `business_name` (jika diisi) / `config('app.name')` |
+
+*Semua setting tersimpan di tabel `settings` di database. Tidak ada konfigurasi `.env` yang perlu diedit jika sudah di-set melalui panel admin.*
+
+---
+
+*Dokumen: `docs/06-USER-GUIDE.md` · diperbarui 2026-08-26*

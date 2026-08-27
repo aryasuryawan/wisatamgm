@@ -94,11 +94,15 @@ class SipGardenFreshSeeder extends Seeder
 
         $sipId = $sip->id;
 
-        // Delete in FK-safe order
-        DB::table('whatsapp_logs')->delete();
-        DB::table('email_logs')->delete();
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
 
+        // Delete in FK-safe order — scope ke branch SIP Garden saja
         $txIds = DB::table('transactions')->where('branch_id', $sipId)->pluck('id');
+        DB::table('whatsapp_logs')->whereIn('transaction_id', $txIds)->orWhereIn('schedule_id',
+            DB::table('schedules')->where('branch_id', $sipId)->pluck('id')
+        )->delete();
+        DB::table('email_logs')->whereIn('transaction_id', $txIds)->delete();
+
         DB::table('payments')->whereIn('transaction_id', $txIds)->delete();
         DB::table('transaction_items')->whereIn('transaction_id', $txIds)->delete();
         DB::table('transactions')->where('branch_id', $sipId)->delete();
@@ -128,6 +132,10 @@ class SipGardenFreshSeeder extends Seeder
 
         DB::table('bookable_units')->where('branch_id', $sipId)->delete();
         DB::table('products')->where('branch_id', $sipId)->delete();
+        DB::table('audit_logs')
+            ->where('model_type', 'App\Models\Branch')
+            ->where('model_id', $sipId)
+            ->delete();
         DB::table('user_branch')->where('branch_id', $sipId)->delete();
         DB::table('customers')->where('branch_id', $sipId)->delete();
 
@@ -140,6 +148,8 @@ class SipGardenFreshSeeder extends Seeder
         User::where('email', 'like', '%@sipgarden.id')->delete();
 
         $sip->delete();
+
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
     }
 
     // --------------------------------------------------------------- branch

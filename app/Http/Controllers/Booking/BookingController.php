@@ -46,15 +46,22 @@ class BookingController extends Controller
     {
         $this->authorize('viewAny', Booking::class);
 
-        try {
-            $month = Carbon::parse($request->input('month', now()->format('Y-m')).'-01');
-        } catch (\Throwable) {
-            $month = now()->startOfMonth();
+        $viewType = $request->input('view', 'month');
+        if (! in_array($viewType, ['month', 'week', 'day'])) {
+            $viewType = 'month';
         }
 
-        $rangeStart = $month->copy()->startOfMonth();
-        $rangeEnd = $month->copy()->endOfMonth();
-        $daysInMonth = $rangeEnd->day;
+        try {
+            $date = Carbon::parse($request->input('date', now()->format('Y-m-d')));
+        } catch (\Throwable) {
+            $date = now();
+        }
+
+        [$rangeStart, $rangeEnd] = match ($viewType) {
+            'month' => [$date->copy()->startOfMonth(), $date->copy()->endOfMonth()],
+            'week' => [$date->copy()->startOfWeek(Carbon::MONDAY), $date->copy()->endOfWeek(Carbon::SUNDAY)],
+            'day' => [$date->copy()->startOfDay(), $date->copy()->endOfDay()],
+        };
 
         $unitsQuery = BookableUnit::with(['branch', 'product'])
             ->where('is_active', true)
@@ -74,7 +81,6 @@ class BookingController extends Controller
 
         $units = $unitsQuery->get();
 
-        // Booking yang menyentuh rentang bulan ini.
         $bookings = Booking::query()
             ->whereIn('bookable_unit_id', $units->pluck('id'))
             ->where('status', '!=', 'cancelled')
@@ -83,11 +89,17 @@ class BookingController extends Controller
             ->get()
             ->groupBy('bookable_unit_id');
 
+        $dates = collect();
+        for ($d = $rangeStart->copy(); $d->lte($rangeEnd); $d->addDay()) {
+            $dates->push($d->copy());
+        }
+
         return view('booking.calendar', [
-            'month' => $month,
-            'prevMonth' => $month->copy()->subMonth()->format('Y-m'),
-            'nextMonth' => $month->copy()->addMonth()->format('Y-m'),
-            'daysInMonth' => $daysInMonth,
+            'viewType' => $viewType,
+            'date' => $date,
+            'rangeStart' => $rangeStart,
+            'rangeEnd' => $rangeEnd,
+            'dates' => $dates,
             'units' => $units,
             'bookingsByUnit' => $bookings,
         ]);

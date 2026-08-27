@@ -31,19 +31,46 @@ class DashboardController extends Controller
         };
 
         $todayReport = ReportService::make($branchIds, now()->startOfDay(), now()->endOfDay());
+        $yesterdayReport = ReportService::make($branchIds, now()->subDay()->startOfDay(), now()->subDay()->endOfDay());
         $periodReport = ReportService::make($branchIds, $periodFrom, $periodUntil);
+        $pl = $periodReport->profitAndLoss();
+
+        // Previous period (same duration, immediately before current period)
+        $periodDays = $periodFrom->diffInDays($periodUntil);
+        $prevPeriodUntil = $periodFrom->subDay()->endOfDay();
+        $prevPeriodFrom = $prevPeriodUntil->copy()->subDays($periodDays)->startOfDay();
+        $prevPeriodReport = ReportService::make($branchIds, $prevPeriodFrom, $prevPeriodUntil);
 
         // Kartu pembanding tetap: tahun ini / bulan ini / bulan lalu.
         $yearReport = ReportService::make($branchIds, now()->startOfYear(), now()->endOfYear());
         $thisMonthReport = ReportService::make($branchIds, now()->startOfMonth(), now()->endOfMonth());
         $lastMonthReport = ReportService::make($branchIds, now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth());
 
+        // Delta helpers
+        $deltaToday = $yesterdayReport->revenue() > 0
+            ? round(($todayReport->revenue() - $yesterdayReport->revenue()) / $yesterdayReport->revenue() * 100, 1)
+            : null;
+        $prevPL = $prevPeriodReport->profitAndLoss();
+        $deltaRevenue = $prevPL['revenue'] > 0
+            ? round(($pl['revenue'] - $prevPL['revenue']) / $prevPL['revenue'] * 100, 1)
+            : null;
+        $deltaExpense = $prevPL['expense'] > 0
+            ? round(($pl['expense'] - $prevPL['expense']) / $prevPL['expense'] * 100, 1)
+            : null;
+        $deltaProfit = $prevPL['profit'] != 0
+            ? round(($pl['profit'] - $prevPL['profit']) / abs($prevPL['profit']) * 100, 1)
+            : null;
+
         return view('dashboard.index', [
             'period' => $period,
             'revenueToday' => $todayReport->revenue(),
             'transactionsToday' => $todayReport->transactionCount(),
-            'pl' => $periodReport->profitAndLoss(),
+            'pl' => $pl,
             'periodTransactions' => $periodReport->transactionCount(),
+            'deltaToday' => $deltaToday,
+            'deltaRevenue' => $deltaRevenue,
+            'deltaExpense' => $deltaExpense,
+            'deltaProfit' => $deltaProfit,
             'comparison' => [
                 'year' => ['revenue' => $yearReport->revenue(), 'transactions' => $yearReport->transactionCount()],
                 'month' => ['revenue' => $thisMonthReport->revenue(), 'transactions' => $thisMonthReport->transactionCount()],

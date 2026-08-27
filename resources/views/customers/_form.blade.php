@@ -27,6 +27,11 @@ $action = $isEdit ? route('customers.update', $customer) : route('customers.stor
                          :options="['organic'=>__('ui.organic'),'ads'=>__('ui.ads'),'referral'=>__('ui.referral'),'walk_in'=>__('ui.walk_in'),'other'=>__('ui.other')]"
                          :value="($customer ?? null)?->source ?? 'other'" />
         </div>
+        <div class="col-md-6">
+            <x-ui.select name="customer_type" :label="__('ui.customer_type')" required
+                         :options="['individual'=>__('ui.customer_type_individual'),'corporate'=>__('ui.customer_type_corporate'),'organization'=>__('ui.customer_type_organization'),'school'=>__('ui.customer_type_school')]"
+                         :value="($customer ?? null)?->customer_type ?? 'individual'" />
+        </div>
         <div class="col-12">
             <label class="form-label fw-semibold">{{ __('ui.note') }}</label>
             <textarea name="notes" rows="3" class="form-control" dusk="input-notes">{{ old('notes', ($customer ?? null)?->notes ?? '') }}</textarea>

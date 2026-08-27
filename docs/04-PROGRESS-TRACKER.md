@@ -20,6 +20,7 @@ Update file ini setiap kali menyelesaikan atau memulai sebuah task (lihat `03-AI
 | WhatsApp (Fonnte) | Selesai — Dusk ditunda | 2026-08-25 |
 | Email (Gmail Sender) | Selesai via mailer pluggable; Gmail API OAuth menunggu credentials | 2026-08-25 |
 | Booking (kamar/meeting/camp) | Selesai — Dusk ditunda | 2026-08-25 |
+| User Management | Selesai | 2026-08-27 |
 
 Status yang dipakai: `Belum mulai` / `Sedang Dikerjakan` / `Selesai` / `Blocked`
 
@@ -243,6 +244,20 @@ _(kosong)_
 - **Buku Panduan Pengguna** (2026-08-25)
   - `docs/06-USER-GUIDE.md` — panduan lengkap semua modul per langkah UI (login, role, booking+kalender, jadwal, POS, tagihan/invoice, bukti upload, biaya, payroll, laporan, notifikasi, troubleshooting). Bahasa Indonesia, untuk staf non-teknis.
 
+- **User Management** (2026-08-27)
+  - Migrations: none (menggunakan users table existing + Spatie Permission tables)
+  - Models: User (existing, HasRoles trait, branch relationship)
+  - Policies: UserPolicy (self-protection: tidak bisa edit/delete sendiri)
+  - Service: UserService (audit trail create/update/delete, sync branches & roles)
+  - Controller: UserController (CRUD resource, validasi password confirm, unique email)
+  - Views: index (table dengan role/branch badge, status, aksi), create/edit/_form (branches & roles checkbox grid)
+  - Routes: `users` resource (permission `users.view` middleware)
+  - Permissions: `users.view/create/edit/delete` ditambah ke seeder
+  - Role matrix: owner (semua), admin-cabang (view/create/edit), finance (view), kasir/guide/marketing (tidak ada)
+  - I18n: lengkap id/en (page titles, form labels, flash messages, confirm dialogs)
+  - Reusable components: x-ui.input, x-ui.select, x-ui.checkbox, x-ui.badge, x-ui.card, x-ui.button
+  - Sidebar: link "Pengguna" di grup Administrasi
+
 - **Refactor UI Tabler penuh + audit blade** (2026-08-24)
   - Layout mengikuti 100% `layout-fluid-vertical.html`: `body.layout-fluid` → sidebar `navbar-vertical` (user menu DI DALAM sidebar, tanpa top header) → `page-header` (page-pretitle/page-title + slot page_actions) → `page-body container-xl` → footer. Catatan: demo resmi pakai `container-xl` (bukan container-fluid) meski nama layout "fluid" — fluid-nya pada sidebar full-height
   - Warna brand via CSS variable Tabler (`--tblr-primary`), bukan override per elemen; sidebar pakai tema gelap default Tabler
@@ -270,6 +285,20 @@ _(kosong)_
 - [ ] Gmail API OAuth2 resmi (PRD 5.2): kredensial OAuth belum ada. Saat ini email jalan via mailer pluggable `.env MAIL_MAILER` (SMTP/log) — swap ke Google API client tinggal ganti transport, tanpa ubah job/service
 - [ ] FONNTE_TOKEN belum diisi di .env produksi — sampai diisi, WA log akan berstatus `failed` dengan alasan jelas
 - [ ] Dusk test Payroll + Report + Dashboard + Notification ditunda oleh owner sampai semua fitur selesai (selector dusk sudah disiapkan; test Dusk Payroll sudah ditulis tapi belum hijau)
+
+- [ ] Masalah DP di omzet: transaksi `partial` (DP belum lunas) sekarang dianggap **liability (deposit)**, belum dihitung ke omzet total. Konfirmasi: biarkan logika hanya `paid` yang hitung omzet, atau tambah fitur deposit tracking di masa depan.
+
+- [ ] Atribusi omset per kampanye: tambah field `campaign_id` di tabel transactions. Laporan grouping per campaign_id di dashboard. Implementasi awal: hubungi booking form ke transaction saat create. Opsi lanjut: kampanye ROI report di menu Laporan.
+
+- [ ] SMTP/Email server: uji coba `Mailpit` di development (PORT 1025) sebagai alternatif cepat sebelum ganti ke SMTP produksi (Gmail/SMTP lain). Sudah terkonfigurasi di `.env` sementara: `MAIL_HOST=127.0.0.1`, `MAIL_PORT=1025`.
+
+- [ ] Cost analysis produk (HPP): tambah field `hpp_satuan` di tabel produk. Logika: HPP terupdate otomatis saat `stock_in` diterima (total biaya masuk / total qty masuk). Tampil di kartu produk dashboard sebagai "HPP" dan "Margin" (Omset - HPP). Dihasilkan oleh service saat stock in, tidak butuh akurat 100% awal—boleh estimate manual dulu.
+
+- [ ] Finansial ratio & analisis: tampilkan 3 ratio di dashboard: Laba Kotor %, Laba Bersih %, ROI (sederhana). Gunakan threshold warning: <20% laba → warning, <10% → danger. Dihasilkan oleh rule PHP di DashboardController, tidak butuh library eksternal.
+
+- [ ] Bank reconciliation: fase selanjutnya (Phase 2). Sampai itu, fitur "Export Riwayat Pembayaran CSV" di menu Laporan sudah cukup untuk manual verification kasir melawan bank statement.
+
+- [ ] Budget tahunan: fitur "budget ringan" di header halaman Finance. Setiap kategori (Gaji, Sewa, Marketing, Operasional) butuh number budget tahunan. Setiap bulan, bandingkan `Actual vs Budget` di ringkasan. Boleh juga skip (sistem sudah punya actuals tracking otomatis, budget cuma buat referensi).
 
 ## Log Perubahan Arsitektur/Keputusan Penting
 _(catat di sini jika ada keputusan yang menyimpang dari `02-SYSTEM-DESIGN.md`, beserta alasannya)_

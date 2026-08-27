@@ -45,6 +45,10 @@
                         </x-ui.badge>
                     </div>
                     <div class="col-md-6">
+                        <p class="mb-1 text-muted">{{ __('ui.customer_type') }}</p>
+                        <x-ui.badge color="secondary">{{ __('ui.customer_type_'.$customer->customer_type) }}</x-ui.badge>
+                    </div>
+                    <div class="col-md-6">
                         <p class="mb-1 text-muted">{{ __('ui.branch') }}</p>
                         <x-ui.badge color="secondary">{{ $customer->branch?->name ?? '-' }}</x-ui.badge>
                     </div>

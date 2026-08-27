@@ -2,6 +2,7 @@ import '@tabler/core/dist/css/tabler.css';
 import 'tom-select/dist/css/tom-select.default.css';
 import '@tabler/icons-webfont/dist/tabler-icons.min.css';
 import './app.css';
+import '../css/sip-garden-theme.css';
 
 import '@tabler/core/dist/js/tabler.min.js';
 
