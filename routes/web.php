@@ -140,6 +140,9 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/export', [ReportController::class, 'export'])
         ->name('reports.export')
         ->middleware('permission:reports.export');
+    Route::get('reports/excel', [ReportController::class, 'excel'])
+        ->name('reports.excel')
+        ->middleware('permission:reports.export');
     Route::get('reports/pdf', [ReportController::class, 'pdf'])
         ->name('reports.pdf')
         ->middleware('permission:reports.view');

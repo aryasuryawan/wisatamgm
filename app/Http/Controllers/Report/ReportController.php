@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Report;
 
 use App\Domain\Report\Services\ReportService;
+use App\Exports\ReportExport;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response as ResponseFacade;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class ReportController extends Controller
@@ -81,9 +84,20 @@ class ReportController extends Controller
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
+    public function excel(Request $request): BinaryFileResponse
+    {
+        $this->authorize('reports.export');
+
+        $service = $this->serviceFromRequest($request);
+
+        $filename = 'laporan-'.$service->dateFrom->format('Ymd').'-'.$service->dateUntil->format('Ymd').'.xlsx';
+
+        return Excel::download(new ReportExport($service), $filename);
+    }
+
     /**
-     * PDF rekap laporan (ringkasan + per cabang + kategori + top list).
-     */
+      * PDF rekap laporan (ringkasan + per cabang + kategori + top list).
+      */
     public function pdf(Request $request): Response
     {
         $this->authorize('reports.view');

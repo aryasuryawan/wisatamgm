@@ -7,6 +7,10 @@
            class="btn btn-outline-secondary" dusk="export-csv">
             CSV
         </a>
+        <a href="{{ route('reports.excel', request()->only(['branch_id', 'date_from', 'date_until'])) }}"
+           class="btn btn-success" dusk="export-excel">
+            <i class="ti ti-file-spreadsheet me-1"></i>Excel
+        </a>
         <a href="{{ route('reports.pdf', request()->only(['branch_id', 'date_from', 'date_until'])) }}"
            class="btn btn-primary" dusk="export-pdf" target="_blank">
             PDF
