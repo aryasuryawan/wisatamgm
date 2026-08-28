@@ -5,6 +5,7 @@
     @php
         $tabsConfig = [
             'business' => ['label' => 'settings_business', 'icon' => 'ti-building-store'],
+            'appearance' => ['label' => 'settings_appearance', 'icon' => 'ti-photo'],
             'notifications' => ['label' => 'settings_notifications', 'icon' => 'ti-mail'],
             'templates' => ['label' => 'settings_templates', 'icon' => 'ti-file-type-pdf'],
             'integrations' => ['label' => 'settings_integrations', 'icon' => 'ti-plug'],

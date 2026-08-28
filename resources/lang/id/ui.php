@@ -656,6 +656,15 @@ return [
     'paper_a4' => 'A4',
     'paper_a5' => 'A5',
 
+    // Appearance / Login illustration
+    'settings_appearance' => 'Tampilan',
+    'appearance_tab_hint' => 'Ilustrasi login tampil di sisi kanan halaman login (desktop). Kosong = pakai ilustrasi default Tabler.',
+    'login_illustration' => 'Ilustrasi Halaman Login',
+    'login_illustration_hint' => 'Format JPG/PNG/WebP/SVG, maks 2 MB. Rasio ilustratif 4:3 disarankan. Kosongkan untuk kembali ke default.',
+    'login_illustration_empty' => 'Belum ada ilustrasi kustom — memakai default template.',
+    'login_illustration_default_hint' => 'Default: ilustrasi Tabler sign-in-illustration (boy with key).',
+    'login_illustration_remove' => 'Hapus ilustrasi kustom & kembali ke default',
+
     // Integrations
     'settings_integrations' => 'Integrasi',
     'integrations_fonnte' => 'WhatsApp — Fonnte API',
@@ -669,6 +678,10 @@ return [
     'mail_encryption' => 'Encryption',
     'mail_from_address' => 'Email Pengirim',
     'mail_from_name' => 'Nama Pengirim',
+
+    // Maintenance / penalty
+    'maintenance_cost_hint' => 'Isi 0 jika tanpa biaya.',
+    'maintenance_penalty_hint' => 'Denda rusak: nominal = harga alat atau bisa diatur manual. Ganti angka di atas sesuai kesepakatan (default saran = harga produk).',
 
     // Receipt / Transaction detail
     'no_payments_recorded' => 'Belum ada pembayaran tercatat.',

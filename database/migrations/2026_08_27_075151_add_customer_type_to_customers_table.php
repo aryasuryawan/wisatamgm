@@ -25,6 +25,7 @@ public function up(): void
         public function down(): void
         {
             Schema::table('customers', function (Blueprint $table) {
+                $table->dropIndex(['customer_type']);
                 $table->dropColumn('customer_type');
             });
         }

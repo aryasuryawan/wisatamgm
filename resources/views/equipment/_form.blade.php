@@ -70,10 +70,17 @@ $action = $isEdit ? route('equipment.update', $unit) : route('equipment.store');
                 </div>
                 <div class="col-md-3">
                     <x-ui.money name="cost" :label="__('ui.cost')" required value="0" />
+                    <div class="form-hint">{{ __('ui.maintenance_cost_hint') }}</div>
                 </div>
                 <div class="col-md-3">
                     <x-ui.input name="description" :label="__('ui.description')" />
                 </div>
+            </div>
+            <div class="form-hint mt-1">
+                {{ __('ui.maintenance_penalty_hint') }}
+                @if($isEdit && $unit->product)
+                    <span class="text-primary">({{ __('ui.base_price') }}: Rp {{ number_format($unit->product->base_price, 0, ',', '.') }})</span>
+                @endif
             </div>
             <x-ui.button type="submit" variant="outline-primary" size="sm" dusk="save-maintenance" class="mt-2">
                 {{ __('ui.add_log') }}

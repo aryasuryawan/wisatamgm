@@ -6,23 +6,44 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>{{ $brand }}</title>
+    <title>{{ $brand }} — {{ __('auth.login_title') }}</title>
 
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/js/app.js'])
     @endif
 </head>
-<body class="border-top-wide border-primary d-flex flex-column">
+<body class="d-flex flex-column">
+<script src="{{ asset('dist/js/tabler-theme.min.js') }}" onerror="this.remove()"></script>
 <div class="page page-center">
-    <div class="container-normal">
-        <div class="row align-items-center justify-content-center g-4">
-            <div class="col-12 text-center mb-3">
-                <h1 class="fw-bold text-primary mb-0">{{ $brand }}</h1>
-            </div>
-            <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
-                <x-ui.card>
+    <div class="container container-normal py-4">
+        <div class="row align-items-center g-4">
+            <div class="col-lg">
+                <div class="container-tight">
+                    <div class="text-center mb-4">
+                        <a href="{{ route('login') }}" class="navbar-brand navbar-brand-autodark">
+                            <span class="navbar-brand-text fw-bold fs-2 text-primary" style="letter-spacing:.02em">{{ $brand }}</span>
+                        </a>
+                    </div>
+
                     {{ $slot }}
-                </x-ui.card>
+
+                    <div class="text-center text-secondary mt-3">
+                        <x-ui.language-switcher />
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg d-none d-lg-block">
+                @php
+                    $customIllustration = \App\Models\Setting::get('login_illustration');
+                    $hasCustom = $customIllustration && \Illuminate\Support\Facades\Storage::disk('public')->exists($customIllustration);
+                @endphp
+                @if($hasCustom)
+                    <img src="{{ \Illuminate\Support\Facades\Storage::url($customIllustration) }}"
+                         alt="Login illustration" class="img d-block mx-auto" style="max-height:400px; max-width:100%; object-fit:contain;" dusk="login-illustration-custom">
+                @else
+                    @include('components.illustrations.default-login')
+                @endif
+            </div>
             </div>
         </div>
     </div>

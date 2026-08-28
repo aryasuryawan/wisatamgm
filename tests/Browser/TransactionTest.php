@@ -90,11 +90,11 @@ class TransactionTest extends DuskTestCase
                 ->waitForText('Rp 61.000')
                 ->assertSee('Rp 61.000');
 
-            // Owner void.
+            // Owner void — Alpine confirm toggle, bukan native dialog.
             $browser->press('@void-transaction')
-                ->waitForDialog()
-                ->acceptDialog()
-                ->waitForText('Dibatalkan (Void)');
+                ->waitFor('@void-confirm-yes', 10)
+                ->press('@void-confirm-yes')
+                ->waitForText('Dibatalkan (Void)', 10);
         });
 
         $this->assertDatabaseHas('transactions', ['id' => $tx->id, 'status' => 'void']);
@@ -111,7 +111,8 @@ class TransactionTest extends DuskTestCase
                 ->visit(route('transactions.index'))
                 ->assertVisible('@transactions-table')
                 ->select('@select-status', 'void')
-                ->press('Filter')
+                ->script("document.querySelector('[dusk=\"filter-button\"]').click()");
+            $browser->pause(800)
                 ->assertVisible('@transactions-table');
         });
     }

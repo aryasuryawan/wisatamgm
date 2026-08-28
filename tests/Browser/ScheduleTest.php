@@ -27,9 +27,11 @@ class ScheduleTest extends DuskTestCase
         $this->seed(RolesPermissionSeeder::class);
 
         $this->branch = Branch::factory()->create(['name' => 'Tulamben Main']);
+        $tripCategory = \App\Models\ProductCategory::factory()->create(['type_slug' => 'wisata', 'name' => 'Wisata']);
         $this->product = Product::factory()->create([
             'name' => 'Fun Dive USAT Liberty',
             'branch_id' => $this->branch->id,
+            'category_id' => $tripCategory->id,
         ]);
 
         $this->admin = User::factory()->create([
@@ -66,12 +68,15 @@ class ScheduleTest extends DuskTestCase
                 ->visit(route('schedules.create'))
                 ->select('product_id', $this->product->id)
                 ->select('branch_id', $this->branch->id)
-                ->script("document.querySelector('[name=date_start]').value = '{$dateStart}';");
-            $browser->script("document.querySelector('[name=date_end]').value = '{$dateEnd}';");
+                ->script("document.querySelector('[name=date_start]').value = '{$dateStart}'; document.querySelector('[name=date_start]').dispatchEvent(new Event('change')); document.querySelector('[name=date_start]').dispatchEvent(new Event('input'));");
+            $browser->script("document.querySelector('[name=date_end]').value = '{$dateEnd}'; document.querySelector('[name=date_end]').dispatchEvent(new Event('change')); document.querySelector('[name=date_end]').dispatchEvent(new Event('input'));");
 
-            $browser->type('capacity', '6')
+            $browser->clear('@input-capacity')
+                ->type('@input-capacity', '6')
                 ->press('@save-schedule')
-                ->waitUntil("window.location.pathname.startsWith('/schedules/') && !window.location.pathname.endsWith('/create')");
+                ->pause(1500)
+                ->storeSource('schedule-after-save')
+                ->waitForText('Fun Dive USAT Liberty', 10);
         });
 
         $schedule = Schedule::orderByDesc('id')->first();
@@ -86,16 +91,22 @@ class ScheduleTest extends DuskTestCase
                 ->visit($showUrl)
                 ->select('customer_id', $customer->id)
                 ->press('@add-participant-button')
-                ->waitForText('Budi Diver')
+                ->waitForText('Budi Diver', 10)
                 ->assertVisible('@participant-form');
 
-            // Ubah status draft -> confirmed.
+            // Ubah status draft -> confirmed — note: translation now "Terbooking" due to booking override (ui.status_confirmed)
             $browser->press('@status-action-confirmed')
-                ->waitForText('Terkonfirmasi');
+                ->pause(1500)
+                ->waitFor('@schedule-status', 10)
+                ->pause(300);
+            $browser->assertSee('Terbooking');
 
             // Ubah status confirmed -> ongoing.
             $browser->press('@status-action-ongoing')
-                ->waitForText('Berjalan');
+                ->pause(1200)
+                ->waitFor('@schedule-status', 10)
+                ->pause(300);
+            $browser->assertSee('Berjalan');
         });
 
         $this->assertDatabaseHas('schedule_participants', [

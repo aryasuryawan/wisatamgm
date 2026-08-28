@@ -655,6 +655,15 @@ return [
     'paper_a4' => 'A4',
     'paper_a5' => 'A5',
 
+    // Appearance / Login illustration
+    'settings_appearance' => 'Appearance',
+    'appearance_tab_hint' => 'Login illustration appears on the right side of the login page (desktop). Empty = use default Tabler illustration.',
+    'login_illustration' => 'Login Page Illustration',
+    'login_illustration_hint' => 'JPG/PNG/WebP/SVG, max 2 MB. 4:3 ratio recommended. Leave empty to use default.',
+    'login_illustration_empty' => 'No custom illustration — using default template.',
+    'login_illustration_default_hint' => 'Default: Tabler sign-in-illustration (boy with key).',
+    'login_illustration_remove' => 'Remove custom illustration & revert to default',
+
     // Integrations
     'settings_integrations' => 'Integrations',
     'integrations_fonnte' => 'WhatsApp — Fonnte API',
@@ -668,6 +677,10 @@ return [
     'mail_encryption' => 'Encryption',
     'mail_from_address' => 'From Email',
     'mail_from_name' => 'From Name',
+
+    // Maintenance / penalty
+    'maintenance_cost_hint' => 'Enter 0 if no cost.',
+    'maintenance_penalty_hint' => 'Damage penalty: nominal = equipment price or adjustable manually. Change the amount above as agreed (suggested default = product price).',
 
     // Receipt / Transaction detail
     'no_payments_recorded' => 'No payments recorded yet.',

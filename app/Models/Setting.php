@@ -10,7 +10,11 @@ class Setting extends Model
 
     public static function get(string $key, ?string $default = null): ?string
     {
-        $setting = static::where('key', $key)->first();
+        try {
+            $setting = static::where('key', $key)->first();
+        } catch (\Throwable $e) {
+            return $default;
+        }
 
         return $setting?->value ?? $default;
     }
@@ -22,17 +26,25 @@ class Setting extends Model
 
     public static function group(string $group): array
     {
-        return static::where('group', $group)
-            ->get()
-            ->pluck('value', 'key')
-            ->toArray();
+        try {
+            return static::where('group', $group)
+                ->get()
+                ->pluck('value', 'key')
+                ->toArray();
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 
     public static function allGrouped(): array
     {
-        return static::all()
-            ->groupBy('group')
-            ->map(fn ($items) => $items->pluck('value', 'key')->toArray())
-            ->toArray();
+        try {
+            return static::all()
+                ->groupBy('group')
+                ->map(fn ($items) => $items->pluck('value', 'key')->toArray())
+                ->toArray();
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 }

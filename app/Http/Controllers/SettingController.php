@@ -68,7 +68,22 @@ class SettingController extends Controller
                 'mail_from_address' => ['nullable', 'email', 'max:255'],
                 'mail_from_name' => ['nullable', 'string', 'max:255'],
             ]),
+            'appearance' => $request->validate([
+                'login_illustration' => ['nullable', 'file', 'mimes:jpeg,png,webp,svg', 'max:2048'],
+                'remove_login_illustration' => ['nullable', 'in:0,1'],
+            ]),
         };
+
+        // Handle removal first for appearance
+        if ($tab === 'appearance' && $request->input('remove_login_illustration') === '1') {
+            $old = Setting::get('login_illustration');
+            if ($old) {
+                \Storage::disk('public')->delete($old);
+                \App\Models\Setting::where('key', 'login_illustration')->delete();
+            }
+            unset($data['remove_login_illustration']);
+            // if also uploading new file, removal already done, continue to upload
+        }
 
         foreach ($data as $key => $value) {
             if ($key === 'business_logo' && $request->hasFile('business_logo')) {
@@ -80,6 +95,30 @@ class SettingController extends Controller
                     fclose($stream);
                 }
                 $value = $name;
+            }
+
+            if ($key === 'login_illustration' && $request->hasFile('login_illustration')) {
+                $file = $request->file('login_illustration');
+                $name = 'settings/login-illustration.'.$file->getClientOriginalExtension();
+                // delete old first
+                $old = Setting::get('login_illustration');
+                if ($old && $old !== $name) {
+                    \Storage::disk('public')->delete($old);
+                }
+                $stream = fopen($file->getPathname(), 'r');
+                \Storage::disk('public')->put($name, $stream);
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+                $value = $name;
+            }
+
+            // skip empty file input (no upload and no removal)
+            if ($key === 'login_illustration' && !$request->hasFile('login_illustration')) {
+                continue;
+            }
+            if ($key === 'remove_login_illustration') {
+                continue;
             }
 
             Setting::set($key, $value, $tab);

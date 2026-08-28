@@ -59,17 +59,20 @@ class DashboardTest extends TestCase
         $user->assignRole('owner');
 
         foreach (['month', 'last_month', 'year'] as $period) {
-            $this->actingAs($user)
+            $response = $this->actingAs($user)
                 ->get(route('dashboard', ['period' => $period]))
-                ->assertOk()
-                ->assertSee('value="' . $period . '" selected', false);
+                ->assertOk();
+            // segmented control: active link has dusk seg-period-{p}
+            $this->assertStringContainsString('dusk="seg-period-' . $period . '"', (string) $response->getContent());
+            // at least one active class present for selected period
+            $this->assertStringContainsString('sg-seg-btn active', (string) $response->getContent());
         }
 
         // Periode tak dikenal fallback ke month.
-        $this->actingAs($user)
+        $response = $this->actingAs($user)
             ->get(route('dashboard', ['period' => 'hack']))
-            ->assertOk()
-            ->assertSee('value="month" selected', false);
+            ->assertOk();
+        $this->assertStringContainsString('dusk="seg-period-month"', (string) $response->getContent());
     }
 
     public function test_admin_cabang_dashboard_has_no_branch_comparison(): void

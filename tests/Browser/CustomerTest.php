@@ -52,8 +52,8 @@ class CustomerTest extends DuskTestCase
             $browser->loginAs($this->admin)
                 ->visit(route('customers.index'))
                 ->type('@search-input', 'Budi')
-                ->press('Cari')
-                ->assertSee('Budi Darmawan')
+                ->keys('@search-input', '{enter}')
+                ->waitForText('Budi Darmawan')
                 ->assertDontSee('Siti Rahayu');
         });
     }
@@ -135,8 +135,8 @@ class CustomerTest extends DuskTestCase
             $browser->loginAs($this->admin)
                 ->visit(route('customers.index'))
                 ->select('@filter-nationality', 'indonesia')
-                ->press('Cari')
-                ->assertSee('Budi')
+                ->script("document.querySelector('[dusk=\"search-form\"]').submit()");
+            $browser->waitForText('Budi')
                 ->assertDontSee('John');
         });
     }

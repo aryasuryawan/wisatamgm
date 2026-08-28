@@ -52,7 +52,7 @@ class RolesPermissionSeeder extends Seeder
                 'equipment.view', 'equipment.create', 'equipment.edit',
                 'inventory.view', 'inventory.edit',
                 'schedules.view', 'schedules.create', 'schedules.edit',
-                'transactions.view', 'transactions.create',
+                'transactions.view', 'transactions.create', 'transactions.void',
                 'discounts.view', 'discounts.create',
                 'expenses.view', 'expenses.create',
                 'reports.view',

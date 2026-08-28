@@ -101,7 +101,7 @@ class EquipmentTest extends DuskTestCase
                     $form->type('date', now()->toDateString())
                         ->select('type', 'routine')
                         ->type('description', 'Regulator checkup')
-                        ->type('cost', '75000')
+                        ->type('@input-cost', '75000')
                         ->press('@save-maintenance');
                 })
                 ->waitForLocation("/equipment/{$unit->id}/edit")

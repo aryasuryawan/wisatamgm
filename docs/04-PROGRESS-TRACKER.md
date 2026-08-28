@@ -35,8 +35,18 @@ _(kosong)_
 
 
 ## Tertunda
-- **Dusk test Payroll** — ditunda oleh owner (2026-08-25): "tunda test dengan dusk sampai semua fitur selesai". Test sudah ditulis (`tests/Browser/PayrollTest.php`, alur create→generate→approve→close) tapi belum hijau (server dev mati saat run terakhir, `ERR_CONNECTION_REFUSED`). Catatan: `database/dusk.sqlite` korup 2x selama sesi ini — kalau muncul "database disk image is malformed", hapus file + buat kosong lagi.
-- Jalankan semua Dusk test yang tertunda sebelum modul dianggap benar-benar tuntas.
+- _(kosong — Dusk suite dijalankan 2026-08-28 setelah fix)_
+
+## Riwayat Dusk Fix 2026-08-28
+- **DashboardTest** `tests/Feature/DashboardTest.php:54` fail `value="month" selected` (segmented control baru) → fix cek `dusk="seg-period-{p}"` + `sg-seg-btn active`. Suite Feature 193/193 hijau.
+- **Migration** `2026_08_27_075151_add_customer_type_to_customers_table.php:28` `down()` dropColumn indexed `customer_type` SQLite error `customers_customer_type_index` → tambah `dropIndex(['customer_type'])` sebelum `dropColumn`. Fix Dusk `DatabaseMigrations` rollback.
+- **Dusk 5 flaky fix**:
+  - `CustomerTest` search+filter stale `press('Cari')` → ganti `keys enter` / `script submit` + `waitForText` `CustomerTest.php:46,129`.
+  - `EquipmentTest` `type('cost')` ke hidden input → ganti `type('@input-cost')` (moneyField display) `EquipmentTest.php:104`.
+  - `ScheduleTest` product random category bukan trip (`wisata`/`jasa`) → buat `tripCategory` eksplisit `wisata`; `capacity` `type('capacity')` append → `clear('@input-capacity')`; `Terkonfirmasi` vs `Terbooking` translation clash → assert `Terbooking`; tambah pause/wait `ScheduleTest.php:30,57`.
+  - `TransactionTest` void `waitForDialog` usang (Alpine confirm) → `press('@void-transaction')->waitFor('@void-confirm-yes')->press('@void-confirm-yes')`; filter stale → `script click` `TransactionTest.php:94,104`.
+  - `DiscountTest` POS `waitUntil` path regex timeout + discount order → `pause` + `waitFor('@receipt-title')` `DiscountTest.php:68`.
+- Hasil Dusk 2026-08-28: Login 1/1, Branch 1/1, Customer 8/8, ProductCategory 5/5, Product 7/7, Equipment 6/6, Schedule 3/3, Transaction 3/3, Discount 5/5, Finance 3/3, Payroll 1/1 — **semua hijau** (serve `php artisan serve --env=dusk.local` manual karena Windows, `chrome-driver 151`, `dusk.sqlite` fresh `php artisan migrate --env=dusk.local`).
 
 ## Selesai
 - **Branch & Auth/RBAC** (2026-08-24)
@@ -276,9 +286,9 @@ _(kosong)_
 - [x] ~~Tax management (PPN Indonesia)~~ → **DIAKTIFKAN** (owner, 2026-08-24): PPN 11% server-side, kolom tax_total ada di transactions
 - [ ] Apakah `tulambenscuba.com` dan `scubago.id` adalah 2 brand di 1 grup usaha yang sama (branch), atau 2 entitas terpisah yang perlu laporan keuangan sepenuhnya independen?
 - [x] ~~Rate komisi guide/instruktur~~ → **DIPUTUSKAN** (owner, 2026-08-25): komisi per-user configurable (`commission_type`: per_pax/per_trip/none + `commission_rate` di users). Sisa open: komisi % harga paket DITUNDA (definisi "pendapatan trip" ambigu karena DP/split payment) — tambahkan nanti kalau dibutuhkan.
-- [ ] Kebijakan denda kerusakan/hilang alat sewa: nominal tetap atau berdasarkan harga alat?
+- [x] ~~Kebijakan denda kerusakan/hilang alat sewa~~ → **DIPUTUSKAN** (owner, 2026-08-28): nominal = harga alat (`products.base_price`) sebagai saran default, **bisa diatur manual** di form maintenance `cost`. Hint ditambah di `equipment/_form.blade.php`. Tidak perlu field baru — admin isi `cost` sesuai kesepakatan.
 - [ ] Mekanisme alokasi unit alat ke jadwal (ERD tidak definisikan; sementara equipment_unit_id ada di transaction_items)
-- [ ] Apakah admin-cabang boleh void transaksi? (sekarang owner-only sesuai matrix permission)
+- [x] ~~Apakah admin-cabang boleh void transaksi?~~ → **YA, BOLEH** (owner, 2026-08-28): `admin-cabang` diberi `transactions.void` di `RolesPermissionSeeder.php:55`, scoped per cabang via `TransactionPolicy::void withinBranch`. Audit log tetap wajib `AuditLogger::log('transaction.void')` + `audit_logs` — tombol Void muncul di receipt untuk admin-cabang tanpa harus owner.
 - [x] ~~Export laporan PDF~~ → **SELESAI** (2026-08-25): Dompdf terpasang; PDF receipt transaksi + lampiran email invoice + PDF rekap laporan. Excel native (Maatwebsite) tetap open — CSV sudah tersedia.
 - [ ] ROI marketing penuh: butuh link discounts↔marketing_campaigns (kolom campaign_id di discounts?) — definisi atribusi omzet per kampanye belum diputuskan
 - [ ] Omzet laporan hanya menghitung status `paid` (ikuti System Design §4). Transaksi `partial` (DP belum lunas) belum masuk omzet — perlu konfirmasi apakah DP dihitung pro-rata
@@ -292,7 +302,7 @@ _(kosong)_
 
 - [ ] SMTP/Email server: uji coba `Mailpit` di development (PORT 1025) sebagai alternatif cepat sebelum ganti ke SMTP produksi (Gmail/SMTP lain). Sudah terkonfigurasi di `.env` sementara: `MAIL_HOST=127.0.0.1`, `MAIL_PORT=1025`.
 
-- [ ] Cost analysis produk (HPP): tambah field `hpp_satuan` di tabel produk. Logika: HPP terupdate otomatis saat `stock_in` diterima (total biaya masuk / total qty masuk). Tampil di kartu produk dashboard sebagai "HPP" dan "Margin" (Omset - HPP). Dihasilkan oleh service saat stock in, tidak butuh akurat 100% awal—boleh estimate manual dulu.
+- [x] ~~Cost analysis produk (HPP)~~ → **FASE 2** (owner, 2026-08-28): field `hpp_satuan` ditunda, tidak masuk MVP. Produk tetap `base_price` saja; HPP/margin di dashboard menunggu fase 2.
 
 - [ ] Finansial ratio & analisis: tampilkan 3 ratio di dashboard: Laba Kotor %, Laba Bersih %, ROI (sederhana). Gunakan threshold warning: <20% laba → warning, <10% → danger. Dihasilkan oleh rule PHP di DashboardController, tidak butuh library eksternal.
 

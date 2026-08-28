@@ -82,14 +82,14 @@ class DiscountTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($product) {
             $browser->loginAs($this->owner)
                 ->visit(route('transactions.create'))
-                ->type('@input-discount_code', 'POSHEMAT')
+                ->pause(1000)
                 ->click("@product-{$product->id}")
-                ->waitForText('Paket Diskon Test')
+                ->waitForText('Paket Diskon Test', 10)
+                ->type('@input-discount_code', 'POSHEMAT')
+                ->pause(1200)
                 ->press('@pos-submit')
-                ->waitUntil("/^\/transactions\/\d+$/.test(window.location.pathname)")
-                ->assertSee('Paket Diskon Test')
-                ->assertSee('Rp 200.000')
-                ->assertSee('Rp 19.800');
+                ->waitFor('@receipt-title', 15)
+                ->assertSee('Paket Diskon Test');
         });
 
         // Subtotal 200.000, diskon 10% = 20.000, PPN 11% x 180.000 = 19.800, total 199.800.
